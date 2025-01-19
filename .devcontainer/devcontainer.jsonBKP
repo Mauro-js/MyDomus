@@ -1,0 +1,23 @@
+{
+  "name": "MyDomus",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [4000, 3306, 8080],
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "burkeholland.simple-react-snippets",
+        "tyriar.sort-lines",
+        "meganrogge.template-string-converter",
+        "eamodio.gitlens",
+        "christian-kohler.npm-intellisense",
+        "rangav.vscode-thunder-client"
+      ]
+    }
+  },
+  "postCreateCommand": "npm install"
+}

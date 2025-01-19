@@ -1,0 +1,77 @@
+image: node:18-bullseye
+
+stages:
+  - test
+  - deploy
+
+cache:
+  key: "otpapi-${CI_COMMIT_BRANCH}"
+  paths:
+    - node_modules/
+
+run_tests:
+  stage: test
+  before_script:
+    - npm install
+  script:
+    - npm run test
+  only:
+    - testing 
+    - preprod
+    - master
+    - tags
+
+deploy_testing:
+  stage: deploy
+  extends:
+    - .deploy_script
+  environment:
+    name: testing
+  variables:
+    ENV: testing
+  only:
+    - testing
+  except:
+    - tags
+
+deploy_preprod:
+  stage: deploy
+  extends:
+    - .deploy_script
+  environment:
+    name: preprod
+  variables:
+    ENV: preprod
+  only:
+    - preprod
+  except:
+    - tags
+
+deploy_production:
+  stage: deploy
+  extends:
+    - .deploy_script
+  environment:
+    name: production
+  variables:
+    ENV: production
+  extends:
+    - .deploy_script
+  when: manual # El job para deploy en prod es manual.
+  allow_failure: false # Si falla falla el pipeline.
+  only:
+    refs:
+      - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/i
+  except:
+    refs:
+      - branches
+      
+.deploy_script:
+  script:
+    - echo "---> Se ejecuta el deploy de $ENV " && date
+    - apt-get -yqq update && apt-get -yqq install openssh-client git rsync
+    - eval $(ssh-agent -s)
+    - echo "$CI_CD_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - export SHIPIT_USE_PROXY_JUMP=false
+    - npx shipit $ENV deploy
+    - echo "---> Fin deploy " && date
